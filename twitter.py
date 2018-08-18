@@ -27,7 +27,13 @@
 # with dummy strings.
 
 from __future__ import print_function
-import base64, HTMLParser, httplib, json, sys, urllib, zlib
+import base64
+import HTMLParser
+import httplib
+import json
+import sys
+import urllib
+import zlib
 from unidecode import unidecode
 from Adafruit_Thermal import *
 
@@ -38,7 +44,7 @@ import os
 # Configurable globals.  Edit to your needs. -------------------------------
 
 # Twitter application credentials -- see notes above -- DO NOT SHARE.
-consumer_key    = os.environ['CONSUMER_KEY']
+consumer_key = os.environ['CONSUMER_KEY']
 consumer_secret = os.environ['CONSUMER_SECRET']
 
 # LED configuration
@@ -56,28 +62,32 @@ queryString = 'amor'
 
 # Other globals.  You probably won't need to change these. -----------------
 
-printer   = Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
-host      = 'api.twitter.com'
-authUrl   = '/oauth2/token'
+printer = Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
+host = 'api.twitter.com'
+authUrl = '/oauth2/token'
 searchUrl = '/1.1/search/tweets.json?'
-agent     = 'Gutenbird v1.0'
+agent = 'Gutenbird v1.0'
+
 # lastID is command line value (if passed), else 1
-if len(sys.argv) > 1: lastId = sys.argv[1]
-else:                 lastId = '1'
+if len(sys.argv) > 1:
+    lastId = sys.argv[1]
+else:
+    lastId = '1'
+
 
 # Initiate an HTTPS connection/request, uncompress and JSON-decode results
 def issueRequestAndDecodeResponse(method, url, body, headers):
-  connection = httplib.HTTPSConnection(host)
-  connection.request(method, url, body, headers)
-  response = connection.getresponse()
-  if response.status != 200:
-    # This is OK for command-line testing, otherwise
-    # keep it commented out when using main.py
-    # print('HTTP error: %d' % response.status)
-    exit(-1)
-  compressed = response.read()
-  connection.close()
-  return json.loads(zlib.decompress(compressed, 16+zlib.MAX_WBITS))
+    connection = httplib.HTTPSConnection(host)
+    connection.request(method, url, body, headers)
+    response = connection.getresponse()
+    if response.status != 200:
+        # This is OK for command-line testing, otherwise
+        # keep it commented out when using main.py
+        # print('HTTP error: %d' % response.status)
+        exit(-1)
+    compressed = response.read()
+    connection.close()
+    return json.loads(zlib.decompress(compressed, 16+zlib.MAX_WBITS))
 
 
 # Mainline code. -----------------------------------------------------------
@@ -85,13 +95,18 @@ def issueRequestAndDecodeResponse(method, url, body, headers):
 # Get access token. --------------------------------------------------------
 
 token = issueRequestAndDecodeResponse(
-  'POST', authUrl, 'grant_type=client_credentials',
-   {'Host'            : host,
-    'User-Agent'      : agent,
-    'Accept-Encoding' : 'gzip',
-    'Content-Type'    : 'application/x-www-form-urlencoded;charset=UTF-8',
-    'Authorization'   : 'Basic ' + base64.b64encode(
-     urllib.quote(consumer_key) + ':' + urllib.quote(consumer_secret))}
+    'POST',
+    authUrl,
+    'grant_type=client_credentials',
+    {
+        'Host': host,
+        'User-Agent': agent,
+        'Accept-Encoding': 'gzip',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'Authorization': 'Basic ' + base64.b64encode(
+            urllib.quote(consumer_key) + ':' + urllib.quote(consumer_secret)
+        )
+    }
   )['access_token']
 
 
@@ -99,14 +114,16 @@ token = issueRequestAndDecodeResponse(
 IO.output(33, True)
 time.sleep(1)
 data = issueRequestAndDecodeResponse(
-  'GET',
-  (searchUrl + 'count=3&since_id=%s&q=%s' %
-   (lastId, urllib.quote(queryString))),
-  None,
-  {'Host'            : host,
-   'User-Agent'      : agent,
-   'Accept-Encoding' : 'gzip',
-   'Authorization'   : 'Bearer ' + token})
+    'GET',
+    (searchUrl + 'count=3&since_id=%s&q=%s' % (lastId, urllib.quote(queryString))),
+    None,
+    {
+        'Host': host,
+        'User-Agent': agent,
+        'Accept-Encoding': 'gzip',
+        'Authorization': 'Bearer ' + token
+    }
+)
 
 IO.output(33, False)
 
@@ -118,29 +135,31 @@ maxId = data['search_metadata']['max_id_str']
 IO.output(31, True)
 time.sleep(1)
 for tweet in data['statuses']:
+    printer.inverseOn()
+    printer.print(' ' + '{:<31}'.format(tweet['user']['screen_name']))
+    printer.inverseOff()
 
-  printer.inverseOn()
-  printer.print(' ' + '{:<31}'.format(tweet['user']['screen_name']))
-  printer.inverseOff()
+    printer.underlineOn()
+    printer.print('{:<32}'.format(tweet['created_at']))
+    printer.underlineOff()
 
-  printer.underlineOn()
-  printer.print('{:<32}'.format(tweet['created_at']))
-  printer.underlineOff()
+    # max_id_str is not always present, so check tweet IDs as fallback
+    id = tweet['id_str']
+    if id > maxId:
+        maxId = id  # String compare is OK for this
 
-  # max_id_str is not always present, so check tweet IDs as fallback
-  id = tweet['id_str']
-  if(id > maxId): maxId = id # String compare is OK for this
+    # Remove HTML escape sequences
+    # and remap Unicode values to nearest ASCII equivalents
+    printer.print(unidecode(
+            HTMLParser.HTMLParser().unescape(tweet['text'])
+        )
+    )
 
-  # Remove HTML escape sequences
-  # and remap Unicode values to nearest ASCII equivalents
-  printer.print(unidecode(
-    HTMLParser.HTMLParser().unescape(tweet['text'])))
-
-  printer.feed(3)
+    printer.feed(3)
 
 # Printer LED off
 IO.output(31, False)
 
 IO.cleanup()
 
-print(maxId) # Piped back to calling process
+print(maxId)  # Piped back to calling process
