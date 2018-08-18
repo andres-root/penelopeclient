@@ -31,6 +31,9 @@ import base64, HTMLParser, httplib, json, sys, urllib, zlib
 from unidecode import unidecode
 from Adafruit_Thermal import *
 
+import RPi.GPIO as IO
+import time
+import os
 
 # Configurable globals.  Edit to your needs. -------------------------------
 
@@ -38,11 +41,17 @@ from Adafruit_Thermal import *
 consumer_key    = os.environ['CONSUMER_KEY']
 consumer_secret = os.environ['CONSUMER_SECRET']
 
+# LED configuration
+IO.setmode(IO.BOARD)
+
+IO.setup(33, IO.OUT)
+IO.setup(31, IO.OUT)
+
 # queryString can be any valid Twitter API search string, including
 # boolean operators.  See http://dev.twitter.com/docs/using-search
 # for options and syntax.  Funny characters do NOT need to be URL
 # encoded here -- urllib takes care of that.
-queryString = 'from:libredpecado'
+queryString = 'amor'
 
 
 # Other globals.  You probably won't need to change these. -----------------
@@ -87,7 +96,8 @@ token = issueRequestAndDecodeResponse(
 
 
 # Perform search. ----------------------------------------------------------
-
+IO.output(33, True)
+time.sleep(1)
 data = issueRequestAndDecodeResponse(
   'GET',
   (searchUrl + 'count=3&since_id=%s&q=%s' %
@@ -98,11 +108,15 @@ data = issueRequestAndDecodeResponse(
    'Accept-Encoding' : 'gzip',
    'Authorization'   : 'Bearer ' + token})
 
+IO.output(33, False)
 
 # Display results. ---------------------------------------------------------
 
 maxId = data['search_metadata']['max_id_str']
 
+# Printer LED on
+IO.output(31, True)
+time.sleep(1)
 for tweet in data['statuses']:
 
   printer.inverseOn()
@@ -123,5 +137,10 @@ for tweet in data['statuses']:
     HTMLParser.HTMLParser().unescape(tweet['text'])))
 
   printer.feed(3)
+
+# Printer LED off
+IO.output(31, False)
+
+IO.cleanup()
 
 print(maxId) # Piped back to calling process
