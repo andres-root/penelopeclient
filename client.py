@@ -37,7 +37,7 @@ def setup():
 def get_tweet():
     IO.output(33, True)
     time.sleep(1)
-    tweet = json.loads(requests.get(URL))
+    tweet = json.loads(requests.get(url))
     IO.output(33, False)
     return tweet
 
