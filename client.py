@@ -29,7 +29,7 @@ def setup():
 
     # Print welcome message
     printer.print(unidecode(
-            HTMLParser.HTMLParser().unescape(tweet['text'])
+            HTMLParser.HTMLParser().unescape(welcome_message)
         )
     )
 
