@@ -25,6 +25,7 @@ def setup():
     IO.setmode(IO.BOARD)
     IO.setup(33, IO.OUT)
     IO.setup(31, IO.OUT)
+    IO.setup(29, IO.OUT)
 
     # Print welcome message
     printer.print(unidecode(
@@ -69,6 +70,12 @@ def start_printing(tweet):
 
     # Printer LED off
     IO.output(31, False)
+
+    time.sleep(5)
+
+    IO.output(29, True)
+    time.sleep(3)
+    IO.output(29, False)
 
     IO.cleanup()
 
