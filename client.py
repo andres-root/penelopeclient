@@ -1,11 +1,11 @@
 from __future__ import print_function
 
 from Adafruit_Thermal import *
-import RPi.GPIO as IO
 import HTMLParser
 import json
 import os
 import requests
+import RPi.GPIO as IO
 import time
 from unidecode import unidecode
 
@@ -71,7 +71,6 @@ def start_printing(tweet):
     IO.output(31, False)
 
     IO.cleanup()
-
 
 while True:
     setup()
