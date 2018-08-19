@@ -14,6 +14,7 @@ consumer_key = os.environ['CONSUMER_KEY']
 consumer_secret = os.environ['CONSUMER_SECRET']
 # TODO: Add URL to env variables
 url = os.environ['URL']
+welcome_message = os.environ['WELCOME_MESSAGE']
 
 # Initialize printer
 printer = Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
@@ -24,6 +25,12 @@ def setup():
     IO.setmode(IO.BOARD)
     IO.setup(33, IO.OUT)
     IO.setup(31, IO.OUT)
+
+    # Print welcome message
+    printer.print(unidecode(
+            HTMLParser.HTMLParser().unescape(tweet['text'])
+        )
+    )
 
 
 def get_tweet():
@@ -44,11 +51,11 @@ def start_printing(tweet):
 
     # Start printing
     printer.inverseOn()
-    printer.print(' ' + '{:<31}'.format(tweet['user']['screen_name']))
+    printer.print(' ' + '{:<31}'.format(tweet['user_name']))
     printer.inverseOff()
 
     printer.underlineOn()
-    printer.print('{:<32}'.format(tweet['created_at']))
+    printer.print('{:<32}'.format(tweet['date']))
     printer.underlineOff()
 
     # Remove HTML escape sequences
