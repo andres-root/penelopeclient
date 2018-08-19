@@ -82,4 +82,6 @@ def start_printing(tweet):
 while True:
     setup()
     tweet = get_tweet()
-    start_printing(tweet)
+    print(tweet)
+    # start_printing(tweet)
+    # IO.cleanup()
