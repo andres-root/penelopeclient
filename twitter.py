@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-º
 #!/usr/bin/python
 
 # This is a Python port of Adafruit's "Gutenbird" sketch for Arduino.
@@ -56,6 +57,11 @@ authUrl   = '/oauth2/token'
 searchUrl = '/1.1/search/tweets.json?'
 agent     = 'Gutenbird v1.0'
 # lastID is command line value (if passed), else 1
+
+printer.print(unidecode(
+HTMLParser.HTMLParser().unescape(u'¿Dónde estarás amor?')))
+printer.feed(3)
+
 if len(sys.argv) > 1: lastId = sys.argv[1]
 else:                 lastId = '1'
 
@@ -83,6 +89,7 @@ def start_printing():
 
     IO.setup(33, IO.OUT)
     IO.setup(31, IO.OUT)
+    IO.setup(29, IO.OUT)
 
 
     # Get access token. --------------------------------------------------------
@@ -142,6 +149,11 @@ def start_printing():
 
     # Printer LED off
     IO.output(31, False)
+    
+
+    IO.output(29, True)
+    time.sleep(3)
+    IO.output(29, False)
 
     IO.cleanup()
 
