@@ -258,7 +258,7 @@ class Adafruit_Thermal(Serial):
 		self.underlineOff()
 		self.setBarcodeHeight(50)
 		self.setSize('s')
-		self.setCharset()
+		self.setCharset(12)
 		self.setCodePage()
 
 	def test(self):

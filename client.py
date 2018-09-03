@@ -13,24 +13,42 @@ from unidecode import unidecode
 consumer_key = os.environ['CONSUMER_KEY']
 consumer_secret = os.environ['CONSUMER_SECRET']
 url = os.environ['URL']
-welcome_message = os.environ['WELCOME_MESSAGE']
+title = os.environ['TITLE']
+subtitle = os.environ['SUBTITLE']
+author = os.environ['AUTHOR']
 
 # Initialize printer
 printer = Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
+
 # Print welcome message
 printer.print(unidecode(
-        HTMLParser.HTMLParser().unescape(welcome_message)
+        HTMLParser.HTMLParser().unescape(title)
     )
 )
 
-printer.feed(4)
+printer.feed(1)
 
 printer.print(unidecode(
-        HTMLParser.HTMLParser().unescape('Adriana Marmorek')
+        HTMLParser.HTMLParser().unescape(subtitle)
+    )
+)
+
+printer.feed(1)
+
+printer.print(unidecode(
+        HTMLParser.HTMLParser().unescape(author)
+    )
+)
+
+printer.feed(1)
+
+printer.print(unidecode(
+        HTMLParser.HTMLParser().unescape('2018')
     )
 )
 
 printer.feed(4)
+
 
 IO.setmode(IO.BOARD)
 IO.setup(29, IO.OUT)
@@ -73,13 +91,12 @@ def start_printing(tweet):
 
     # Remove HTML escape sequences
     # and remap Unicode values to nearest ASCII equivalents
-    print(tweet['text'])
     printer.print(unidecode(
             HTMLParser.HTMLParser().unescape(tweet['text'])
         )
     )
 
-    printer.feed(5)
+    printer.feed(6)
 
     # Printer LED off
     IO.output(31, False)
@@ -87,10 +104,11 @@ def start_printing(tweet):
     time.sleep(5)
 
     IO.output(29, True)
-    time.sleep(2)
+    time.sleep(1.5)
     IO.output(29, False)
 
     IO.cleanup()
+    time.sleep(40)
 
 while True:
     setup()
